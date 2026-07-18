@@ -1,7 +1,7 @@
 replicaCount: 2
 
 image:
-  repository: 123456789012.dkr.ecr.us-west-2.amazonaws.com/lesson-5-ecr
+  repository: "" # Заполняется динамически через пайплайн или terraform output (module.ecr.repository_url)
   tag: "latest"
   pullPolicy: IfNotPresent
 
@@ -23,12 +23,19 @@ hpa:
   maxReplicas: 6
   targetCPUUtilizationPercentage: 70
 
+# Открытые конфигурации
 env:
-  dbHost: "db"
-  dbName: "postgres"
-  dbUser: "postgres"
-  dbPassword: "supersecretpassword"
   debugMode: "False"
+  allowedHosts: "*"
+  dbHost: "postgres-service"
+  dbName: "django_prod"
+  dbUser: "django_user"
+  dbPort: "5432"
+
+# Секретные данные (будут зашифрованы в Kubernetes Secret)
+secrets:
+  secretKey: "djanog-super-safe-secret-key-12345"
+  dbPassword: "highly-secure-database-password-2026"
 
 ingress:
   enabled: false
