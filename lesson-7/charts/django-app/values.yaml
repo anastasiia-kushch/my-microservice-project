@@ -1,0 +1,39 @@
+replicaCount: 2
+
+image:
+  repository: 123456789012.dkr.ecr.us-west-2.amazonaws.com/lesson-5-ecr
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8000
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+hpa:
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+env:
+  dbHost: "db"
+  dbName: "postgres"
+  dbUser: "postgres"
+  dbPassword: "supersecretpassword"
+  debugMode: "False"
+
+ingress:
+  enabled: false
+  className: "nginx"
+  host: "yourdomain.com"
+  path: /
+  pathType: Prefix
+  tls: true
