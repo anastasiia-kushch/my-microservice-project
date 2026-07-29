@@ -1,7 +1,7 @@
 replicaCount: 2
 
 image:
-  repository: "" # Заполняется динамически через пайплайн или terraform output (module.ecr.repository_url)
+  repository: "" # Set via: helm upgrade --install ... --set image.repository=<account>.dkr.ecr.us-west-2.amazonaws.com/lesson-5-ecr
   tag: "latest"
   pullPolicy: IfNotPresent
 
