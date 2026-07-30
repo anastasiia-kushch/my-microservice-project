@@ -5,6 +5,16 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.32"
+    }
+
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.14"
+    }
   }
 }
 
@@ -56,4 +66,27 @@ module "eks" {
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
   depends_on         = [module.vpc, module.ecr]
+}
+
+# Jenkins
+module "jenkins" {
+  source = "./modules/jenkins"
+
+  cluster_name = module.eks.cluster_name
+
+  depends_on = [
+    module.eks
+  ]
+}
+
+# Argo CD
+module "argo_cd" {
+  source = "./modules/argo_cd"
+
+  cluster_name = module.eks.cluster_name
+
+  depends_on = [
+    module.eks,
+    module.jenkins
+  ]
 }

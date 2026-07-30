@@ -1,22 +1,26 @@
-# EKS Cluster and Helm Deployment (Lesson 7)
+# CI/CD Pipeline with Jenkins, Terraform, Helm and Argo CD (Lesson 9)
 
-Цей проєкт містить модульну Terraform-структуру для створення AWS EKS кластера, Amazon ECR репозиторію, Helm-чарту для Django-застосунку та налаштування віддаленого Terraform state у S3 з блокуванням через DynamoDB.
+## Project Overview
+
+This project demonstrates a complete CI/CD pipeline for deploying a Django application to Amazon EKS using Terraform, Helm, Jenkins, and Argo CD.
+
+The infrastructure is fully managed with Terraform. Jenkins automatically builds and publishes Docker images to Amazon ECR, updates the Helm chart, and pushes changes to GitHub. Argo CD continuously monitors the Git repository and automatically synchronizes the application with the Kubernetes cluster.
 
 ---
 
-## 🏗️ Структура проєкту
+# Project Structure
 
 ```
 .
-├── backend.tf               # Віддалений Terraform backend (S3 + DynamoDB)
-├── main.tf                  # Головний Terraform файл
-├── variables.tf             # Глобальні змінні
-├── outputs.tf               # Outputs Terraform
-├── modules/
-│   ├── s3-backend/
-│   ├── vpc/
-│   ├── ecr/
-│   └── eks/
+├── backend.tf
+├── main.tf
+├── variables.tf
+├── outputs.tf
+├── Jenkinsfile
+├── Dockerfile
+├── manage.py
+├── requirements.txt
+├── core/
 ├── charts/
 │   └── django-app/
 │       ├── Chart.yaml
@@ -28,25 +32,49 @@
 │           ├── secret.yaml
 │           ├── hpa.yaml
 │           └── ingress.yaml
-├── core/
-├── manage.py
-├── Dockerfile
-├── requirements.txt
-└── README.md
+└── modules/
+    ├── s3-backend/
+    ├── vpc/
+    ├── ecr/
+    ├── eks/
+    ├── jenkins/
+    └── argo_cd/
 ```
 
 ---
 
-## 🚀 Розгортання інфраструктури
+# Technologies
+
+* Terraform
+* AWS VPC
+* Amazon S3
+* Amazon DynamoDB
+* Amazon ECR
+* Amazon EKS
+* Docker
+* Helm
+* Jenkins
+* Argo CD
+* Kubernetes
+* Django
+
+---
+
+# Infrastructure Deployment
+
+Initialize Terraform:
 
 ```bash
 terraform init
+```
+
+Deploy infrastructure:
+
+```bash
 terraform apply --auto-approve
 ```
 
----
-
-## Налаштування kubectl
+After deployment, configure kubectl:
 
 ```bash
 aws eks update-kubeconfig \
@@ -56,41 +84,114 @@ aws eks update-kubeconfig \
 
 ---
 
-## Завантаження Docker image в ECR
+# Jenkins Pipeline
 
-```bash
-aws ecr get-login-password --region us-west-2 \
-| docker login --username AWS --password-stdin <ACCOUNT_ID>.dkr.ecr.us-west-2.amazonaws.com
+The Jenkins pipeline performs the following steps:
 
-docker build -t django-app .
+1. Clones the GitHub repository.
+2. Builds the Docker image using Kaniko.
+3. Pushes the image to Amazon ECR.
+4. Updates the Docker image tag in the Helm chart.
+5. Commits the updated Helm chart.
+6. Pushes changes to the main branch.
 
-docker tag django-app:latest <ACCOUNT_ID>.dkr.ecr.us-west-2.amazonaws.com/lesson-5-ecr:latest
+Pipeline definition is located in:
 
-docker push <ACCOUNT_ID>.dkr.ecr.us-west-2.amazonaws.com/lesson-5-ecr:latest
+```
+Jenkinsfile
 ```
 
 ---
 
-## Деплой через Helm
+# Helm Deployment
+
+Deploy the Django application:
 
 ```bash
-helm upgrade --install django-app ./charts/django-app \
-  --set image.repository=<ACCOUNT_ID>.dkr.ecr.us-west-2.amazonaws.com/lesson-5-ecr
+helm upgrade --install django-app ./charts/django-app
+```
+
+Upgrade deployment after changes:
+
+```bash
+helm upgrade django-app ./charts/django-app
 ```
 
 ---
 
-## Реалізовано
+# Argo CD
 
-- Terraform modules
-- AWS VPC
-- Remote State (S3 + DynamoDB)
-- Amazon ECR
-- AWS EKS
-- Helm Chart
-- ConfigMap
-- Secret
-- Horizontal Pod Autoscaler
-- LoadBalancer Service
-- Liveness Probe
-- Readiness Probe
+Argo CD continuously monitors the Git repository.
+
+Whenever Jenkins updates the Helm chart and pushes a new commit, Argo CD automatically synchronizes the application with the Kubernetes cluster.
+
+The Argo CD Application is defined inside:
+
+```
+modules/argo_cd/charts/
+```
+
+---
+
+# CI/CD Workflow
+
+```
+Developer
+     │
+     ▼
+ GitHub Repository
+     │
+     ▼
+   Jenkins
+     │
+     ├── Build Docker image
+     ├── Push image to Amazon ECR
+     ├── Update Helm values.yaml
+     └── Push changes to GitHub
+                │
+                ▼
+            Argo CD
+                │
+                ▼
+        Amazon EKS Cluster
+                │
+                ▼
+         Django Application
+```
+
+---
+
+# Destroy Infrastructure
+
+To avoid unnecessary AWS charges, remove all resources after testing:
+
+```bash
+terraform destroy
+```
+
+If the backend infrastructure (S3 bucket and DynamoDB table) has already been removed, recreate it before running Terraform again.
+
+---
+
+# Implemented Features
+
+* Modular Terraform infrastructure
+* Remote Terraform State (S3 + DynamoDB)
+* AWS VPC
+* Amazon ECR
+* Amazon EKS
+* Helm deployment
+* Jenkins installed with Helm
+* Kubernetes Jenkins Agent
+* Kaniko image build
+* Automatic Docker image publishing to ECR
+* Automatic Helm chart update
+* GitOps workflow
+* Argo CD deployment
+* Automatic application synchronization
+* ConfigMap
+* Secret
+* Horizontal Pod Autoscaler
+* LoadBalancer Service
+* Ingress support
+

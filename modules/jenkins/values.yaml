@@ -1,0 +1,35 @@
+controller:
+  admin:
+    createSecret: true
+
+  serviceType: LoadBalancer
+
+  installPlugins:
+    - kubernetes
+    - workflow-aggregator
+    - git
+    - configuration-as-code
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
+
+agent:
+  enabled: true
+
+  image: jenkins/inbound-agent
+
+  tag: latest
+
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "256Mi"
+
+    limits:
+      cpu: "500m"
+      memory: "512Mi"

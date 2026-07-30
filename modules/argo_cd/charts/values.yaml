@@ -1,0 +1,7 @@
+applications:
+  - name: django-app
+    namespace: default
+    project: default
+    repoURL: https://github.com/anastasiia-kushch/my-microservice-project.git
+    targetRevision: main
+    path: charts/django-app
