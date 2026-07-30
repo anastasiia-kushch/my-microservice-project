@@ -3,6 +3,9 @@ kind: Application
 
 metadata:
   name: {{ (index .Values.applications 0).name }}
+  namespace: {{ .Release.Namespace }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 
 spec:
   project: {{ (index .Values.applications 0).project }}
