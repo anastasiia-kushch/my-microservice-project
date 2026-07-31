@@ -129,3 +129,32 @@ module "argo_cd" {
     module.jenkins
   ]
 }
+
+module "rds" {
+  source = "./modules/rds"
+
+  name       = "lesson-db"
+  use_aurora = false
+
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnet_ids
+
+  engine                 = "postgres"
+  engine_version         = "16.3"
+  parameter_group_family = "postgres16"
+  instance_class         = "db.t3.micro"
+
+  database_name = "appdb"
+  username      = "dbadmin"
+  password      = var.db_password
+
+  multi_az            = false
+  publicly_accessible = false
+
+  allowed_cidr_blocks = []
+
+  tags = {
+    Environment = "dev"
+    Lesson      = "db-module"
+  }
+}

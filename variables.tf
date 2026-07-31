@@ -22,3 +22,14 @@ variable "ecr_name" {
   type    = string
   default = "lesson-5-ecr"
 }
+
+variable "db_password" {
+  description = "Master password for the database"
+  type        = string
+  sensitive   = true
+
+  validation {
+    condition     = length(var.db_password) >= 8
+    error_message = "Database password must contain at least 8 characters."
+  }
+}
