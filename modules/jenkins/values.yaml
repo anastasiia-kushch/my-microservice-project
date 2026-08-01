@@ -1,4 +1,9 @@
 controller:
+  image:
+    repository: jenkins/jenkins
+    tag: "lts-jdk17"
+    pullPolicy: Always
+
   admin:
     createSecret: true
 
@@ -10,25 +15,27 @@ controller:
     - git
     - configuration-as-code
     - credentials-binding
+    - ws-cleanup
 
   persistence:
     enabled: true
+    storageClass: gp3
     size: 10Gi
 
   serviceAccount:
     create: true
     name: jenkins-sa
     annotations:
-      eks.amazonaws.com/role-arn: "arn:aws:iam::889951087627:role/jenkins-role"
+      eks.amazonaws.com/role-arn: "${jenkins_role_arn}"
 
   resources:
     requests:
       cpu: "500m"
       memory: "1Gi"
-
     limits:
       cpu: "1000m"
       memory: "2Gi"
 
 agent:
   enabled: true
+  serviceAccount: jenkins-sa

@@ -22,12 +22,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-module "s3_backend" {
-  source      = "./modules/s3-backend"
-  bucket_name = var.bucket_name
-  table_name  = var.dynamodb_table_name
-}
-
 module "vpc" {
   source = "./modules/vpc"
 
@@ -111,10 +105,16 @@ provider "helm" {
 module "jenkins" {
   source = "./modules/jenkins"
 
-  cluster_name = module.eks.cluster_name
+  cluster_name        = module.eks.cluster_name
+  oidc_provider       = module.eks.oidc_provider
+  oidc_provider_arn   = module.eks.oidc_provider_arn
+  aws_account_id      = "889951087627"
+  aws_region          = var.aws_region
+  ecr_repository_name = var.ecr_name
 
   depends_on = [
-    module.eks
+    module.eks,
+    kubernetes_storage_class_v1.gp3
   ]
 }
 
@@ -140,7 +140,7 @@ module "rds" {
   subnet_ids = module.vpc.private_subnet_ids
 
   engine                 = "postgres"
-  engine_version         = "16.3"
+  engine_version         = "16.14"
   parameter_group_family = "postgres16"
   instance_class         = "db.t3.micro"
 
@@ -157,4 +157,22 @@ module "rds" {
     Environment = "dev"
     Lesson      = "db-module"
   }
+}
+
+module "monitoring" {
+  source = "./modules/monitoring"
+
+  namespace              = "monitoring"
+  release_name           = "monitoring"
+  grafana_admin_password = var.grafana_admin_password
+
+  grafana_storage_size    = "5Gi"
+  prometheus_storage_size = "10Gi"
+  prometheus_retention    = "7d"
+  grafana_service_type    = "ClusterIP"
+  enable_alertmanager     = true
+
+  depends_on = [
+    module.eks
+  ]
 }

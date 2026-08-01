@@ -1,0 +1,82 @@
+alertmanager:
+  enabled: ${enable_alertmanager}
+
+grafana:
+  enabled: true
+
+  fullnameOverride: grafana
+
+  service:
+    type: ${grafana_service_type}
+    port: 80
+    targetPort: 3000
+
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: gp3
+    accessModes:
+      - ReadWriteOnce
+    size: ${grafana_storage_size}
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  defaultDashboardsEnabled: true
+  defaultDashboardsTimezone: utc
+
+prometheus:
+  enabled: true
+
+  prometheusSpec:
+    retention: ${prometheus_retention}
+
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 2Gi
+
+  storageSpec:
+    volumeClaimTemplate:
+      spec:
+        storageClassName: gp3
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: ${prometheus_storage_size}
+
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi

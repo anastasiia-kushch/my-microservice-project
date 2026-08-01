@@ -33,3 +33,14 @@ variable "db_password" {
     error_message = "Database password must contain at least 8 characters."
   }
 }
+
+variable "grafana_admin_password" {
+  description = "Administrator password for Grafana"
+  type        = string
+  sensitive   = true
+
+  validation {
+    condition     = length(var.grafana_admin_password) >= 8
+    error_message = "Grafana password must contain at least 8 characters."
+  }
+}
